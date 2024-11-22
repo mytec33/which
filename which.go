@@ -8,29 +8,26 @@ import (
 )
 
 const (
-	EXIT_SUCCESS       = 0
-	EXIT_INVALID_ARGS  = 1
-	EXIT_NOT_ALL_FOUND = 2
-	EXIT_PATH_EMPTY    = 3
+	EXIT_SUCCESS = 0
+	EXIT_FAILURE = 1 // Ugh, lousy name because we exit for different reasonse but naitve has all exits same code
 )
 
 func main() {
 	flag.Usage = printUsage
 
+	//TODO: how to identify a bad flag; that seems to be a reason for naitve to show usage
 	var aFlag = flag.Bool("a", false, "list all instances of program(s)")
 	var sFlag = flag.Bool("s", false, "no output, just return 0 if all of the executables are found, or 1 if some were found")
 	flag.Parse()
 
 	programs := flag.Args()
 	if len(programs) == 0 {
-		flag.Usage()
-		os.Exit(EXIT_INVALID_ARGS)
+		os.Exit(EXIT_FAILURE)
 	}
 
 	path := os.Getenv("PATH")
 	if path == "" {
-		fmt.Println("PATH environment variable is empty")
-		os.Exit(EXIT_PATH_EMPTY)
+		os.Exit(EXIT_FAILURE)
 	}
 	pathSplit := filepath.SplitList(path)
 
@@ -55,21 +52,31 @@ func main() {
 		m[v] = found
 	}
 
-	if *sFlag {
-		for _, found := range m {
-			if !found {
-				os.Exit(EXIT_NOT_ALL_FOUND)
-			}
-		}
-
+	allFound := allFound(m)
+	if *sFlag && allFound {
 		os.Exit(EXIT_SUCCESS)
+	} else if *sFlag && !allFound {
+		os.Exit(EXIT_FAILURE)
 	}
 
 	for _, v := range programPaths {
 		fmt.Println(v)
 	}
 
-	os.Exit(EXIT_SUCCESS)
+	if allFound {
+		os.Exit(EXIT_SUCCESS)
+	} else {
+		os.Exit(EXIT_FAILURE)
+	}
+}
+
+func allFound(m map[string]bool) bool {
+	for _, found := range m {
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func isThere(file string, path string) string {
