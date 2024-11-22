@@ -73,6 +73,7 @@ func TestIsThere(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to create test file: %v", err)
 				}
+
 				if tt.isExecutable {
 					err := os.Chmod(fullPath, 0755)
 					if err != nil {
@@ -241,38 +242,35 @@ func TestWhichEmptyPath(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			// Set PATH for the test
 			var env []string
-			if tc.temporaryPath == "" {
-				os.Unsetenv("PATH") // Unset PATH if needed
-			} else {
-				os.Setenv("PATH", tc.temporaryPath) // Use specified PATH
-			}
-			env = append(env, "PATH="+os.Getenv("PATH")) // Explicitly include PATH in the environment
 
-			// Run native which (absolute path to avoid PATH issues)
+			if tc.temporaryPath == "" {
+				os.Unsetenv("PATH")
+			} else {
+				os.Setenv("PATH", tc.temporaryPath)
+			}
+
+			env = append(env, "PATH="+os.Getenv("PATH"))
 			nativeOutput, nativeCode, err := runCommandWithEnv(whichCmd, tc.args, env)
 			if err != nil {
 				t.Fatalf("Error running native which: %v", err)
 			}
 
-			// Run custom which
 			customOutput, customCode, err := runCommandWithEnv("./which", tc.args, env)
 			if err != nil {
 				t.Fatalf("Error running custom which: %v", err)
 			}
 
-			// Check exit codes
 			if nativeCode != tc.nativeExitCode {
 				t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
 					tc.description, nativeCode, tc.nativeExitCode)
 			}
+
 			if customCode != tc.customExitCode {
 				t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
 					tc.description, customCode, tc.customExitCode)
 			}
 
-			// Compare outputs if specified
 			if tc.expectedOutputMatch && nativeOutput != customOutput {
 				t.Errorf("Output mismatch for '%s':\nNative: %q\nCustom: %q",
 					tc.description, nativeOutput, customOutput)
