@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,20 +9,24 @@ import (
 	"testing"
 )
 
+// Override shell built-in, like on macOS
+const NATIVE_WHICH = "/usr/bin/which"
+const CUSTOM_WHICH = "./which"
+
 func TestPrintUsage(t *testing.T) {
-	var buf bytes.Buffer
-	flag.CommandLine.SetOutput(&buf)
+	output, exitCode, err := runCommand(CUSTOM_WHICH)
 
-	originalArgs := os.Args
-	os.Args = []string{"./which"}
-	defer func() { os.Args = originalArgs }()
+	if err != nil {
+		t.Fatalf("Failed to run command %q: %v", CUSTOM_WHICH, err)
+	}
 
-	printUsage()
+	expected := "usage: which [-as] program ...\n"
+	if exitCode != 1 {
+		t.Errorf("Expected exit code 0, got %d", exitCode)
+	}
 
-	output := buf.String()
-	expected := "Usage: ./which [options] program1 [program2 ...]\n"
 	if !bytes.Contains([]byte(output), []byte(expected)) {
-		t.Errorf("Expected usage to include %q, got %q", expected, output)
+		t.Errorf("Expected %q in output, but got %q", expected, output)
 	}
 }
 
@@ -161,12 +164,13 @@ func TestWhich(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			nativeOutput, nativeCode, err := runCommand("which", tc.args...)
+
+			nativeOutput, nativeCode, err := runCommand(NATIVE_WHICH, tc.args...)
 			if err != nil {
 				t.Fatalf("Error running native which: %v", err)
 			}
 
-			customOutput, customCode, err := runCommand("./which", tc.args...)
+			customOutput, customCode, err := runCommand(CUSTOM_WHICH, tc.args...)
 			if err != nil {
 				t.Fatalf("Error running custom which: %v", err)
 			}
@@ -211,7 +215,6 @@ func runCommandWithEnv(cmd string, args []string, env []string) (string, int, er
 
 func TestWhichEmptyPath(t *testing.T) {
 	originalPath := os.Getenv("PATH")
-	whichCmd := "/usr/bin/which"
 	defer os.Setenv("PATH", originalPath)
 
 	testCases := []struct {
@@ -251,12 +254,12 @@ func TestWhichEmptyPath(t *testing.T) {
 			}
 
 			env = append(env, "PATH="+os.Getenv("PATH"))
-			nativeOutput, nativeCode, err := runCommandWithEnv(whichCmd, tc.args, env)
+			nativeOutput, nativeCode, err := runCommandWithEnv(NATIVE_WHICH, tc.args, env)
 			if err != nil {
 				t.Fatalf("Error running native which: %v", err)
 			}
 
-			customOutput, customCode, err := runCommandWithEnv("./which", tc.args, env)
+			customOutput, customCode, err := runCommandWithEnv(CUSTOM_WHICH, tc.args, env)
 			if err != nil {
 				t.Fatalf("Error running custom which: %v", err)
 			}

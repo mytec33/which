@@ -22,6 +22,7 @@ func main() {
 
 	programs := flag.Args()
 	if len(programs) == 0 {
+		flag.Usage()
 		os.Exit(EXIT_FAILURE)
 	}
 
@@ -100,7 +101,5 @@ func isThere(file string, path string) string {
 }
 
 func printUsage() {
-	fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options] program1 [program2 ...]\n", os.Args[0])
-	fmt.Println("\nOptions:")
-	flag.PrintDefaults()
+	fmt.Println("usage: which [-as] program ...")
 }
