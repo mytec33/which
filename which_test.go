@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -309,6 +310,11 @@ func TestWhichEmptyPath(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		if runtime.GOOS == "openbsd" && tc.description == "Empty PATH" {
+			fmt.Printf("Skipping test on OpenBSD (not configured for KSH)\n")
+			continue
+		}
+
 		t.Run(tc.description, func(t *testing.T) {
 			var env []string
 
