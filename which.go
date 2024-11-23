@@ -104,5 +104,7 @@ func isThere(file string, path string) string {
 func printUsage() {
 	if runtime.GOOS == "darwin" {
 		fmt.Println("usage: which [-as] program ...")
+	} else if runtime.GOOS == "openbsd" {
+		fmt.Println("usage: which [-a] program ...")
 	}
 }
