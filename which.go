@@ -52,6 +52,10 @@ func main() {
 			}
 		}
 		m[v] = found
+
+		if runtime.GOOS == "openbsd" {
+			programPaths = append(programPaths, "which: "+v+": Command not found.")
+		}
 	}
 
 	allFound := allFound(m)
@@ -86,10 +90,6 @@ func isThere(file string, path string) string {
 
 	fileInfo, err := os.Stat(fullPath)
 	if err != nil {
-		if runtime.GOOS == "openbsd" {
-			return "which: " + file + ": Command not found."
-		}
-
 		return ""
 	}
 
