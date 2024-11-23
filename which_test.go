@@ -171,6 +171,63 @@ func TestWhich(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		// Test broken out on its own
+		if runtime.GOOS == "openbsd" && tc.description == "All not found" {
+			continue
+		}
+
+		t.Run(tc.description, func(t *testing.T) {
+
+			nativeOutput, nativeCode, err := runCommand(NATIVE_WHICH, tc.args...)
+			if err != nil {
+				t.Fatalf("Error running native which: %v", err)
+			}
+
+			customOutput, customCode, err := runCommand(CUSTOM_WHICH, tc.args...)
+			if err != nil {
+				t.Fatalf("Error running custom which: %v", err)
+			}
+
+			if nativeCode != tc.nativeExitCode {
+				t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
+					tc.description, nativeCode, tc.nativeExitCode)
+			}
+
+			if customCode != tc.customExitCode {
+				t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
+					tc.description, customCode, tc.customExitCode)
+			}
+
+			if tc.expectedOutputMatch && nativeOutput != customOutput {
+				t.Errorf("Output mismatch for '%s':\nNative: %q\nCustom: %q",
+					tc.description, nativeOutput, customOutput)
+			}
+		})
+	}
+}
+
+func TestWhich_OpenBSD(t *testing.T) {
+	if runtime.GOOS != "openbsd" {
+		return
+	}
+
+	testCases := []struct {
+		description         string
+		args                []string
+		nativeExitCode      int
+		customExitCode      int
+		expectedOutputMatch bool
+	}{
+		{
+			description:         "All not found",
+			args:                []string{"nonexistent", "unknown"},
+			nativeExitCode:      2,
+			customExitCode:      2,
+			expectedOutputMatch: true,
+		},
+	}
+
+	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
 			nativeOutput, nativeCode, err := runCommand(NATIVE_WHICH, tc.args...)
