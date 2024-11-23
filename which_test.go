@@ -142,7 +142,7 @@ func TestWhich(t *testing.T) {
 		},
 		{
 			description:         "Multiple found programs",
-			args:                []string{"ls", "grep", "bash"},
+			args:                []string{"ls", "grep", "ssh"},
 			nativeExitCode:      0,
 			customExitCode:      0,
 			expectedOutputMatch: true,
