@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -14,13 +15,20 @@ const NATIVE_WHICH = "/usr/bin/which"
 const CUSTOM_WHICH = "./which"
 
 func TestPrintUsage(t *testing.T) {
+	var expected = ""
+
 	output, exitCode, err := runCommand(CUSTOM_WHICH)
 
 	if err != nil {
 		t.Fatalf("Failed to run command %q: %v", CUSTOM_WHICH, err)
 	}
 
-	expected := "usage: which [-as] program ...\n"
+	if runtime.GOOS == "darwin" {
+		expected = "usage: which [-as] program ...\n"
+	} else if runtime.GOOS == "openbsd" {
+		expected = "usage: which [-a] name ...\n"
+	}
+
 	if exitCode != 1 {
 		t.Errorf("Expected exit code 0, got %d", exitCode)
 	}

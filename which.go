@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 const (
@@ -101,5 +102,7 @@ func isThere(file string, path string) string {
 }
 
 func printUsage() {
-	fmt.Println("usage: which [-as] program ...")
+	if runtime.GOOS == "darwin" {
+		fmt.Println("usage: which [-as] program ...")
+	}
 }
