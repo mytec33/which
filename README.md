@@ -1,8 +1,8 @@
 # Go-Based Implementation of the `which` Command
 
-This is an attempt to recreate a *nix utility across multiple platforms with the intention the Go version could be a drop in replacement for the native version.
+This is an attempt to recreate a *nix utility across multiple platforms and architectures with the intention that the Go version could be a drop in replacement for the native version.
 
-Windows was attempted, however there myriad ways in which to determine if a binary file is executable, so for now, this cross platform will be restriced to *nix based systems.
+Windows was attempted, however there are myriad ways in which to determine if a binary file is executable, so for now, this cross platform effort will be restriced to *nix based systems.
 
 ## Platforms
 
