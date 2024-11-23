@@ -311,7 +311,7 @@ func TestWhichEmptyPath(t *testing.T) {
 
 	for _, tc := range testCases {
 		if runtime.GOOS == "openbsd" && tc.description == "Empty PATH" {
-			fmt.Printf("Skipping test on OpenBSD (not configured for KSH)\n")
+			fmt.Printf("Skipping 'Empty PATH' test on OpenBSD (not yet configured for KSH)\n")
 			continue
 		}
 
