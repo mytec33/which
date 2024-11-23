@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	EXIT_SUCCESS = 0
-	EXIT_FAILURE = 1 // Ugh, lousy name because we exit for different reasonse but naitve has all exits same code
+	EXIT_SUCCESS    = 0
+	EXIT_FAILURE    = 1 // Ugh, lousy name because we exit for different reasonse but naitve has all exits same code
+	EXIT_NONE_FOUND = 2 // OpenBSD
 )
 
 func main() {
@@ -69,16 +70,32 @@ func main() {
 		fmt.Println(v)
 	}
 
+	// Special results first
+	if runtime.GOOS == "openbsd" && noneFound(m) {
+		os.Exit(EXIT_NONE_FOUND)
+	}
+
 	if allFound {
 		os.Exit(EXIT_SUCCESS)
 	} else {
 		os.Exit(EXIT_FAILURE)
 	}
+
 }
 
 func allFound(m map[string]bool) bool {
 	for _, found := range m {
 		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+// So far, this is for OpenBSD which returns a 2 if no names were resolved
+func noneFound(m map[string]bool) bool {
+	for _, found := range m {
+		if found {
 			return false
 		}
 	}
