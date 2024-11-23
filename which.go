@@ -53,7 +53,7 @@ func main() {
 		}
 		m[v] = found
 
-		if runtime.GOOS == "openbsd" {
+		if runtime.GOOS == "openbsd" && !found {
 			programPaths = append(programPaths, "which: "+v+": Command not found.")
 		}
 	}
