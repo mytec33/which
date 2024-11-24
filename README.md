@@ -1,8 +1,12 @@
 # Go-Based Implementation of the `which` Command
 
-This is an attempt to recreate a *nix utility across multiple platforms and architectures with the intention that the Go version could be a drop in replacement for the native version.
+This is an attempt to recreate a `which` utility in Go across multiple platforms and architectures with the intention that the Go version could be a drop in replacement for the native version.
+
+### Not attempting
 
 Windows was attempted, however there are myriad ways in which to determine if a binary file is executable, so for now, this cross platform effort will be restriced to *nix based systems.
+
+GNU which is quite a different animal from the version found on macOS, OpenBSD, and Ubuntu. Some of the additional options look good, but I'm not to try and mix two different versions of which into one program.
 
 ## Platforms
 
@@ -22,23 +26,6 @@ Windows was attempted, however there are myriad ways in which to determine if a 
 |`-a flag`           |✅    |
 |`-s flag`           |✅    |
 
-### GNU version I've encountered on Fedora.
-
-|Flags              |Implemented|
-|:------------------|:----:|
-|`--all -a`         |❌ ✅ |
-|`--read-alias, i`  |❌    |
-|`--skip-alias`     |❌    |
-|`--read-functions` |❌    |
-|`--skip-functions` |❌    |
-|`--skip-dot`       |❌    |
-|`--skip-tilde`     |❌    |
-|`--show-dot`       |❌    |
-|`--show-tilde`     |❌    |
-|`--tty-only  `     |❌    |
-|`--version, -v, -V`|❌    |
-|`--help`           |❌    |
-
 ### OpenBSD
 
 |Flags              |Implemented|
@@ -46,3 +33,9 @@ Windows was attempted, however there are myriad ways in which to determine if a 
 |`-a flag`          |✅    |
 | 
 
+### Ubuntu
+
+|Flags               |Implemented|
+|:-------------------|:----:|
+|`-a flag`           |✅    |
+|`-s flag`           |✅    |
