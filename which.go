@@ -158,6 +158,7 @@ func printFlagUsage() {
 
 		os.Exit(EXIT_INVALID_ARGS)
 	} else if runtime.GOOS == "openbsd" {
+		fmt.Println(errOutput)
 		splitOutput := strings.Split(errOutput.String(), "--")
 		if len(splitOutput) != 2 {
 			fmt.Println("Invalid error output")
