@@ -11,6 +11,11 @@ import (
 	"testing"
 )
 
+const DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "/usr/bin/which: illegal option -- z\nusage: which [-as] program ...\n"
+const DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG
+const LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: ./which [-as] args ...\n"
+const LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: /usr/bin/which [-as] args\n"
+
 // Override shell built-in, like on macOS
 const NATIVE_WHICH = "/usr/bin/which"
 const CUSTOM_WHICH = "./which"
@@ -375,84 +380,80 @@ func runCommandInvalidArg(cmd string, args ...string) (string, int, error) {
 	return stderr.String() + out.String(), exitCode, nil
 }
 
-func TestWhichInvalidArg(t *testing.T) {
-	originalPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", originalPath)
+type testCaseArgs struct {
+	description          string
+	args                 []string
+	expectedCustomOutput string
+	expectedNativeOutput string
+	expectedExitCode     int
+}
 
-	testCases := []struct {
-		description          string
-		args                 []string
-		expectedNativeOutput string
-		expectedCustomOutput string
-		exitCode             int
-		expectedOutputMatch  bool
-	}{
-		{
-			description:          "Invalid ARG",
-			args:                 []string{"-z"},
-			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
-			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
-			exitCode:             2,
-			expectedOutputMatch:  true,
-		},
-		{
-			description:          "Invalid ARGS",
-			args:                 []string{"-z", "-y"},
-			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
-			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
-			exitCode:             2,
-			expectedOutputMatch:  true,
-		},
-		{
-			description:          "Invalid ARG with good arg",
-			args:                 []string{"-a", "-z"},
-			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
-			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
-			exitCode:             2,
-			expectedOutputMatch:  true,
-		},
-		{
-			description:          "Invalid ARGS with good arg",
-			args:                 []string{"-z", "-a", "-y"},
-			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
-			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
-			exitCode:             2,
-			expectedOutputMatch:  true,
-		},
+func runWhichArgTest(t *testing.T, tc testCaseArgs) {
+	nativeOutput, nativeExitCode, err := runCommandInvalidArg(NATIVE_WHICH, tc.args...)
+	if err != nil {
+		t.Fatalf("Error running native which: %v", err)
+	}
+
+	if nativeOutput != tc.expectedNativeOutput {
+		t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+			tc.description, nativeOutput, tc.expectedNativeOutput)
+	}
+
+	if nativeExitCode != tc.expectedExitCode {
+		t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
+			tc.description, nativeExitCode, tc.expectedExitCode)
+	}
+
+	customOutput, customExitCode, err := runCommandInvalidArg(CUSTOM_WHICH, tc.args...)
+	if err != nil {
+		t.Fatalf("Error running custom which: %v", err)
+	}
+
+	if customOutput != tc.expectedNativeOutput {
+		t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+			tc.description, customOutput, tc.expectedNativeOutput)
+	}
+
+	if customExitCode != tc.expectedExitCode {
+		t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
+			tc.description, customExitCode, tc.expectedExitCode)
+	}
+}
+
+func TestWhichInvalidArgDarwin(t *testing.T) {
+	testCases := []testCaseArgs{
+		{"Invalid Arg", []string{"-z"}, DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args", []string{"-z", "-y"}, DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Arg and Good Arg", []string{"-a", "-z"}, DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args and Good Arg", []string{"-z", "-a", "-y"}, DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+		runWhichArgTest(t, tc)
+	}
+}
 
-			nativeOutput, nativeExitCode, err := runCommandInvalidArg(NATIVE_WHICH, tc.args...)
-			if err != nil {
-				t.Fatalf("Error running native which: %v", err)
-			}
+func TestWhichInvalidArgLinux(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		return
+	}
 
-			customOutput, customExitCode, err := runCommandInvalidArg(CUSTOM_WHICH, tc.args...)
-			if err != nil {
-				t.Fatalf("Error running custom which: %v", err)
-			}
+	testCases := []testCaseArgs{
+		{"Invalid Arg", []string{"-z"}, LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args", []string{"-z", "-y"}, LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Arg and Good Arg", []string{"-a", "-z"}, LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args and Good Arg", []string{"-z", "-a", "-y"}, LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+	}
 
-			if nativeExitCode != tc.exitCode {
-				t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
-					tc.description, nativeExitCode, tc.exitCode)
-			}
-
-			if customExitCode != tc.exitCode {
-				t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
-					tc.description, customExitCode, tc.exitCode)
-			}
-
-			if tc.expectedNativeOutput != nativeOutput {
-				t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
-					tc.description, nativeOutput, tc.expectedNativeOutput)
-			}
-
-			if tc.expectedCustomOutput != customOutput {
-				t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
-					tc.description, customOutput, tc.expectedCustomOutput)
-			}
-		})
+	for _, tc := range testCases {
+		runWhichArgTest(t, tc)
 	}
 }
