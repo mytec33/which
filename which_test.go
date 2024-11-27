@@ -352,3 +352,107 @@ func TestWhichEmptyPath(t *testing.T) {
 		})
 	}
 }
+
+// Because both STDOUT and STDERR are used with an invalid arg error,
+// the which command prints STDERR first and then the STDOUT (usage...)
+// unlike the other version of this function.
+func runCommandInvalidArg(cmd string, args ...string) (string, int, error) {
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	c := exec.Command(cmd, args...)
+	c.Stdout = &out
+	c.Stderr = &stderr
+	err := c.Run()
+
+	exitCode := 0
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		exitCode = exitErr.ExitCode()
+	} else if err != nil {
+		return "", 0, err
+	}
+
+	// This order is very important
+	return stderr.String() + out.String(), exitCode, nil
+}
+
+func TestWhichInvalidArg(t *testing.T) {
+	originalPath := os.Getenv("PATH")
+	defer os.Setenv("PATH", originalPath)
+
+	testCases := []struct {
+		description          string
+		args                 []string
+		expectedNativeOutput string
+		expectedCustomOutput string
+		exitCode             int
+		expectedOutputMatch  bool
+	}{
+		{
+			description:          "Invalid ARG",
+			args:                 []string{"-z"},
+			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
+			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
+			exitCode:             2,
+			expectedOutputMatch:  true,
+		},
+		{
+			description:          "Invalid ARGS",
+			args:                 []string{"-z", "-y"},
+			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
+			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
+			exitCode:             2,
+			expectedOutputMatch:  true,
+		},
+		{
+			description:          "Invalid ARG with good arg",
+			args:                 []string{"-a", "-z"},
+			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
+			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
+			exitCode:             2,
+			expectedOutputMatch:  true,
+		},
+		{
+			description:          "Invalid ARGS with good arg",
+			args:                 []string{"-z", "-a", "-y"},
+			expectedNativeOutput: "Illegal option -z\nUsage: /usr/bin/which [-as] args\n",
+			expectedCustomOutput: "Illegal option -z\nUsage: ./which [-as] args ...\n",
+			exitCode:             2,
+			expectedOutputMatch:  true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			nativeOutput, nativeExitCode, err := runCommandInvalidArg(NATIVE_WHICH, tc.args...)
+			if err != nil {
+				t.Fatalf("Error running native which: %v", err)
+			}
+
+			customOutput, customExitCode, err := runCommandInvalidArg(CUSTOM_WHICH, tc.args...)
+			if err != nil {
+				t.Fatalf("Error running custom which: %v", err)
+			}
+
+			if nativeExitCode != tc.exitCode {
+				t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
+					tc.description, nativeExitCode, tc.exitCode)
+			}
+
+			if customExitCode != tc.exitCode {
+				t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
+					tc.description, customExitCode, tc.exitCode)
+			}
+
+			if tc.expectedNativeOutput != nativeOutput {
+				t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+					tc.description, nativeOutput, tc.expectedNativeOutput)
+			}
+
+			if tc.expectedCustomOutput != customOutput {
+				t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+					tc.description, customOutput, tc.expectedCustomOutput)
+			}
+		})
+	}
+}
