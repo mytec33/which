@@ -136,21 +136,17 @@ func isThere(file string, path string) string {
 }
 
 func printFlagUsage() {
-	fmt.Printf("Err Output: *%s*", errOutput.String())
+	// Mimic the error output of the local program
+	// We are parsing a string like this: "flag provided but not defined: -z"
 
-	split := strings.Split(errOutput.String(), ":")
+	split := strings.Split(errOutput.String(), "-")
 	if len(split) != 2 {
 		fmt.Println("Invalid error output")
 		os.Exit(EXIT_INVALID_ARGS)
 	}
 
 	if runtime.GOOS == "darwin" {
-		splitDash := strings.Split(split[1], "-")
-		if len(splitDash) != 2 {
-			fmt.Println("Invalid flag format")
-			os.Exit(EXIT_FAILURE)
-		}
-		fmt.Printf("/usr/bin/which: illegal option -- %v", splitDash[1])
+		fmt.Printf("/usr/bin/which: illegal option -- %v", split[1])
 		printUsage()
 
 		os.Exit(EXIT_FAILURE)
@@ -160,14 +156,7 @@ func printFlagUsage() {
 
 		os.Exit(EXIT_INVALID_ARGS)
 	} else if runtime.GOOS == "openbsd" {
-		// This looks like this: "flag provided but not defined: -z"
-		splitOutput := strings.Split(errOutput.String(), "-")
-		if len(splitOutput) != 2 {
-			fmt.Println("Invalid error output")
-			os.Exit(EXIT_FAILURE)
-		}
-
-		fmt.Printf("which: unknown option -- %v", splitOutput[1])
+		fmt.Printf("which: unknown option -- %v", split[1])
 		printUsage()
 
 		os.Exit(EXIT_FAILURE)
