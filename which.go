@@ -164,7 +164,6 @@ func printFlagUsage() {
 }
 
 func printUsage() {
-	// OpenBSD and Ubuntu differ from OpenBSD, so they are the default case.
 	if runtime.GOOS == "openbsd" {
 		fmt.Println("usage: which [-a] name ...")
 	} else if runtime.GOOS == "linux" {
