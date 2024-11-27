@@ -158,19 +158,14 @@ func printFlagUsage() {
 
 		os.Exit(EXIT_INVALID_ARGS)
 	} else if runtime.GOOS == "openbsd" {
-		fmt.Println(errOutput)
-		splitOutput := strings.Split(errOutput.String(), "--")
+		// This looks like this: "flag provided but not defined: -z"
+		splitOutput := strings.Split(errOutput.String(), "-")
 		if len(splitOutput) != 2 {
 			fmt.Println("Invalid error output")
 			os.Exit(EXIT_INVALID_ARGS)
 		}
 
-		splitDash := strings.Split(strings.TrimSpace(split[1]), "-")
-		if len(splitDash) != 2 {
-			fmt.Println("Invalid flag format")
-			os.Exit(EXIT_FAILURE)
-		}
-		fmt.Printf("which: unknown option -- %v", split[1])
+		fmt.Printf("which: unknown option -- %v", splitOutput[1])
 		printUsage()
 
 		os.Exit(EXIT_INVALID_ARGS)
