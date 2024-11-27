@@ -1,30 +1,43 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
-const (
-	EXIT_SUCCESS    = 0
-	EXIT_FAILURE    = 1 // Ugh, lousy name because we exit for different reasonse but naitve has all exits same code
-	EXIT_NONE_FOUND = 2 // OpenBSD
-)
+const EXIT_SUCCESS = 0
+const EXIT_FAILURE = 1
+const EXIT_NONE_FOUND = 2   // OpenBSD
+const EXIT_INVALID_ARGS = 2 // Ubuntu
+
+var errOutput = new(bytes.Buffer)
 
 func main() {
-	flag.Usage = printUsage
+	flag.CommandLine.Init("", flag.ContinueOnError)
+	flag.CommandLine.SetOutput(errOutput)
 
-	//TODO: how to identify a bad flag; that seems to be a reason for naitve to show usage
+	flag.Usage = printFlagUsage
+
 	var aFlag = flag.Bool("a", false, "list all instances of program(s)")
 	var sFlag = flag.Bool("s", false, "no output, just return 0 if all of the executables are found, or 1 if some were found")
 	flag.Parse()
 
+	if errOutput.Len() > 0 {
+		printUsage()
+		return
+	}
+
 	programs := flag.Args()
 	if len(programs) == 0 {
-		flag.Usage()
+		if runtime.GOOS != "linux" {
+			printUsage()
+		}
+
 		os.Exit(EXIT_FAILURE)
 	}
 
@@ -122,10 +135,25 @@ func isThere(file string, path string) string {
 	return ""
 }
 
+func printFlagUsage() {
+	if runtime.GOOS == "linux" {
+		split := strings.Split(errOutput.String(), ":")
+		if len(split) == 2 {
+			fmt.Printf("Illegal option%v", split[1])
+			printUsage()
+		}
+
+		os.Exit(EXIT_INVALID_ARGS)
+	}
+}
+
 func printUsage() {
-	if runtime.GOOS == "darwin" {
-		fmt.Println("usage: which [-as] program ...")
-	} else if runtime.GOOS == "openbsd" {
+	// OpenBSD and Ubuntu differ from OpenBSD, so they are the default case.
+	if runtime.GOOS == "openbsd" {
 		fmt.Println("usage: which [-a] name ...")
+	} else if runtime.GOOS == "linux" {
+		fmt.Println("Usage: " + os.Args[0] + " [-as] args ...")
+	} else {
+		fmt.Println("usage: which [-as] program ...")
 	}
 }
