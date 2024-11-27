@@ -159,7 +159,7 @@ func printFlagUsage() {
 		os.Exit(EXIT_INVALID_ARGS)
 	} else if runtime.GOOS == "openbsd" {
 		fmt.Printf("Flag: *%s*", split[1])
-		splitDash := strings.Split(split[1], "-")
+		splitDash := strings.Split(strings.TrimSpace(split[1]), "-")
 		if len(splitDash) != 2 {
 			fmt.Println("Invalid flag format")
 			os.Exit(EXIT_FAILURE)
