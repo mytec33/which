@@ -151,7 +151,7 @@ func printFlagUsage() {
 
 		os.Exit(EXIT_FAILURE)
 	} else if runtime.GOOS == "linux" {
-		fmt.Printf("Illegal option%v", split[1])
+		fmt.Printf("Illegal option -%v", split[1])
 		printUsage()
 
 		os.Exit(EXIT_INVALID_ARGS)
