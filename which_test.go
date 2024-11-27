@@ -421,6 +421,10 @@ func runWhichArgTest(t *testing.T, tc testCaseArgs) {
 }
 
 func TestWhichInvalidArgDarwin(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		return
+	}
+
 	testCases := []testCaseArgs{
 		{"Invalid Arg", []string{"-z"}, DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
 			DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
