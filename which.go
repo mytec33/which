@@ -136,14 +136,27 @@ func isThere(file string, path string) string {
 }
 
 func printFlagUsage() {
+	split := strings.Split(errOutput.String(), ":")
+	if len(split) != 2 {
+		fmt.Println("Invalid error output")
+		os.Exit(EXIT_INVALID_ARGS)
+	}
+
 	if runtime.GOOS == "linux" {
-		split := strings.Split(errOutput.String(), ":")
-		if len(split) == 2 {
-			fmt.Printf("Illegal option%v", split[1])
-			printUsage()
-		}
+		fmt.Printf("Illegal option%v", split[1])
+		printUsage()
 
 		os.Exit(EXIT_INVALID_ARGS)
+	} else if runtime.GOOS == "darwin" {
+		splitDash := strings.Split(split[1], "-")
+		if len(splitDash) != 2 {
+			fmt.Println("Invalid flag format")
+			os.Exit(EXIT_FAILURE)
+		}
+		fmt.Printf("/usr/bin/which: illegal option -- %v", splitDash[1])
+		printUsage()
+
+		os.Exit(EXIT_FAILURE)
 	}
 }
 
