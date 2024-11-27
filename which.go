@@ -136,31 +136,26 @@ func isThere(file string, path string) string {
 }
 
 func printFlagUsage() {
-	// Mimic the error output of the local program
-	// We are parsing a string like this: "flag provided but not defined: -z"
+	flagErrors := map[string]struct {
+		message  string
+		exitCode int
+	}{
+		"darwin":  {message: "/usr/bin/which: illegal option -- %v", exitCode: EXIT_FAILURE},
+		"linux":   {message: "Illegal option -%v", exitCode: EXIT_INVALID_ARGS},
+		"openbsd": {message: "which: unknown option -- %v", exitCode: EXIT_FAILURE},
+	}
 
+	// We are parsing a string like this: "flag provided but not defined: -z"
+	// to print a error string like the native program
 	split := strings.Split(errOutput.String(), "-")
 	if len(split) != 2 {
 		fmt.Println("Invalid error output")
 		os.Exit(EXIT_INVALID_ARGS)
 	}
 
-	if runtime.GOOS == "darwin" {
-		fmt.Printf("/usr/bin/which: illegal option -- %v", split[1])
-		printUsage()
-
-		os.Exit(EXIT_FAILURE)
-	} else if runtime.GOOS == "linux" {
-		fmt.Printf("Illegal option -%v", split[1])
-		printUsage()
-
-		os.Exit(EXIT_INVALID_ARGS)
-	} else if runtime.GOOS == "openbsd" {
-		fmt.Printf("which: unknown option -- %v", split[1])
-		printUsage()
-
-		os.Exit(EXIT_FAILURE)
-	}
+	fmt.Printf(flagErrors[runtime.GOOS].message, split[1])
+	printUsage()
+	os.Exit(flagErrors[runtime.GOOS].exitCode)
 }
 
 func printUsage() {
