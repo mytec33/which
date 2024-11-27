@@ -136,6 +136,8 @@ func isThere(file string, path string) string {
 }
 
 func printFlagUsage() {
+	fmt.Printf("Err Output: *%s*", errOutput.String())
+
 	split := strings.Split(errOutput.String(), ":")
 	if len(split) != 2 {
 		fmt.Println("Invalid error output")
