@@ -411,7 +411,7 @@ func runWhichArgTest(t *testing.T, tc testCaseArgs) {
 		t.Fatalf("Error running custom which: %v", err)
 	}
 
-	if customOutput != tc.expectedNativeOutput {
+	if customOutput != tc.expectedCustomOutput {
 		t.Errorf("Output mismatch for custom '%s':\ngot: %q, want %q",
 			tc.description, customOutput, tc.expectedCustomOutput)
 	}
