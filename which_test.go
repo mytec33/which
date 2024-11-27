@@ -15,6 +15,8 @@ const DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "/usr/bin/which: illegal optio
 const DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG
 const LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: ./which [-as] args ...\n"
 const LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: /usr/bin/which [-as] args\n"
+const OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "which: unknown option -- z\nusage: which [-a] name ...\n"
+const OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = "which: unknown option -- z\nusage: which [-a] name ...\n"
 
 // Override shell built-in, like on macOS
 const NATIVE_WHICH = "/usr/bin/which"
@@ -455,6 +457,27 @@ func TestWhichInvalidArgLinux(t *testing.T) {
 			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
 		{"Invalid Args and Good Arg", []string{"-z", "-a", "-y"}, LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
 			LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+	}
+
+	for _, tc := range testCases {
+		runWhichArgTest(t, tc)
+	}
+}
+
+func TestWhichInvalidArgOpenBSD(t *testing.T) {
+	if runtime.GOOS != "openbsd" {
+		return
+	}
+
+	testCases := []testCaseArgs{
+		{"Invalid Arg", []string{"-z"}, OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args", []string{"-z", "-y"}, OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Arg and Good Arg", []string{"-a", "-z"}, OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
+		{"Invalid Args and Good Arg", []string{"-z", "-a", "-y"}, OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG,
+			OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG, 1},
 	}
 
 	for _, tc := range testCases {
