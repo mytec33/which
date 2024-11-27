@@ -397,12 +397,12 @@ func runWhichArgTest(t *testing.T, tc testCaseArgs) {
 	}
 
 	if nativeOutput != tc.expectedNativeOutput {
-		t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+		t.Errorf("Output mismatch for native '%s':\ngot: %q, want %q",
 			tc.description, nativeOutput, tc.expectedNativeOutput)
 	}
 
 	if nativeExitCode != tc.expectedExitCode {
-		t.Errorf("Native exit code mismatch for '%s': got %d, want %d",
+		t.Errorf("Exit code mismatch for native '%s': got %d, want %d",
 			tc.description, nativeExitCode, tc.expectedExitCode)
 	}
 
@@ -412,12 +412,12 @@ func runWhichArgTest(t *testing.T, tc testCaseArgs) {
 	}
 
 	if customOutput != tc.expectedNativeOutput {
-		t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
+		t.Errorf("Output mismatch for custom '%s':\ngot: %q, want %q",
 			tc.description, customOutput, tc.expectedCustomOutput)
 	}
 
 	if customExitCode != tc.expectedExitCode {
-		t.Errorf("Custom exit code mismatch for '%s': got %d, want %d",
+		t.Errorf("Exit code mismatch for custom '%s': got %d, want %d",
 			tc.description, customExitCode, tc.expectedExitCode)
 	}
 }
