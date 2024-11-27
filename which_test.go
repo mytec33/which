@@ -411,7 +411,7 @@ func runWhichArgTest(t *testing.T, tc testCaseArgs) {
 
 	if customOutput != tc.expectedNativeOutput {
 		t.Errorf("Output mismatch for '%s':\ngot: %q, want %q",
-			tc.description, customOutput, tc.expectedNativeOutput)
+			tc.description, customOutput, tc.expectedCustomOutput)
 	}
 
 	if customExitCode != tc.expectedExitCode {
