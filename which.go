@@ -162,13 +162,13 @@ func printFlagUsage() {
 		splitOutput := strings.Split(errOutput.String(), "-")
 		if len(splitOutput) != 2 {
 			fmt.Println("Invalid error output")
-			os.Exit(EXIT_INVALID_ARGS)
+			os.Exit(EXIT_FAILURE)
 		}
 
 		fmt.Printf("which: unknown option -- %v", splitOutput[1])
 		printUsage()
 
-		os.Exit(EXIT_INVALID_ARGS)
+		os.Exit(EXIT_FAILURE)
 	}
 }
 
