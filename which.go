@@ -177,7 +177,7 @@ func printUsage() {
 	if runtime.GOOS == "openbsd" {
 		fmt.Println("usage: which [-a] name ...")
 	} else if runtime.GOOS == "linux" {
-		fmt.Println("Usage: " + os.Args[0] + " [-as] args ...")
+		fmt.Println("Usage: " + os.Args[0] + " [-as] args")
 	} else {
 		fmt.Println("usage: which [-as] program ...")
 	}

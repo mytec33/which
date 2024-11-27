@@ -13,7 +13,7 @@ import (
 
 const DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "/usr/bin/which: illegal option -- z\nusage: which [-as] program ...\n"
 const DARWIN_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = DARWIN_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG
-const LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: ./which [-as] args ...\n"
+const LINUX_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: ./which [-as] args\n"
 const LINUX_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = "Illegal option -z\nUsage: /usr/bin/which [-as] args\n"
 const OPENBSD_EXPECTED_CUSTOM_OUTPUT_INVALID_ARG = "which: unknown option -- z\nusage: which [-a] name ...\n"
 const OPENBSD_EXPECTED_NATIVE_OUTPUT_INVALID_ARG = "which: unknown option -- z\nusage: which [-a] name ...\n"
